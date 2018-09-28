@@ -1,0 +1,7 @@
+tools:
+    external_code_coverage: true
+    php_analyzer: true
+    php_analyzer:
+        filter:
+            paths: ["src/*", "tests/*"]
+    sensiolabs_security_checker: true
