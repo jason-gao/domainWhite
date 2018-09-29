@@ -3,6 +3,7 @@
 /**
  * DomainWhiteSdk::setConfig(xx);
  * DomainWhiteSdk::addDomainWhite(xx, xx);
+ * DomainWhiteSdk::delDomainWhite(xx, xx);
  */
 
 namespace DomainWhiteSdk;
