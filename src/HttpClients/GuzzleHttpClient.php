@@ -14,20 +14,23 @@ use DomainWhiteSdk\Http\RawResponse;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 
-class YunDunGuzzleHttpClient implements HttpClientInterface
+class GuzzleHttpClient implements HttpClientInterface
 {
     /**
      * @var \GuzzleHttp\Client The Guzzle client.
      */
     protected $guzzleClient;
+    protected $logger;
 
     /**
      * @param \GuzzleHttp\Client|null The Guzzle client.
      * @param null|Client $guzzleClient
+     * @param null|Logger $logger
      */
-    public function __construct(Client $guzzleClient = null)
+    public function __construct(Client $guzzleClient = null, $logger = null)
     {
         $this->guzzleClient = $guzzleClient ?: new Client();
+        $this->logger       = $logger;
     }
 
     /**
@@ -52,8 +55,11 @@ class YunDunGuzzleHttpClient implements HttpClientInterface
         } else {
             $options['body'] = $body;
         }
-
-
+        if ($this->logger) {
+            $this->logger->Info("url:" . $url);
+            $this->logger->Info("method:" . $method);
+            $this->logger->Info("options:" . print_r($options, 1));
+        }
         try {
             $rawResponse = $this->guzzleClient->request($method, $url, $options);
         } catch (RequestException $e) {
@@ -65,6 +71,11 @@ class YunDunGuzzleHttpClient implements HttpClientInterface
         $rawHeaders     = $this->getHeadersAsString($rawResponse);
         $rawBody        = $rawResponse->getBody()->getContents();
         $httpStatusCode = $rawResponse->getStatusCode();
+        if ($this->logger) {
+            $this->logger->Info("rawHeaders:" . print_r($rawHeaders, 1));
+            $this->logger->Info("httpStatusCode:" . $httpStatusCode);
+            $this->logger->Info("rawBody:" . $rawBody);
+        }
 
         return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
 
