@@ -78,7 +78,9 @@ class HyHlDomainWhiteSdk
 
     public static function apiCall($url, $method, $body, $headers = [], $timeOut = 20, $options = [])
     {
-        $url = self::getNormalConfig()['base_api_url'] . $url;
+        $url              = self::getNormalConfig()['base_api_url'] . $url;
+        $body['user']     = self::getNormalConfig()['user'];
+        $body['userpass'] = self::getNormalConfig()['userpass'];
         if ($body && is_array($body)) {
             foreach ($body as $k => &$v) {
                 if ($k != 'timestamp') {
@@ -97,6 +99,21 @@ class HyHlDomainWhiteSdk
         return $resBody;
     }
 
+    /**
+     * @param string $url
+     * @param array $data
+     * @return string
+     * @node_name
+     * @link
+     * @desc
+     *
+     * $data = [
+     *      "domain" => 'xx',
+     *      "ip" => "xx",
+     *      "authority" => "备案号",
+     *      "timestamp" => "时间戳"
+     * ]
+     */
     public static function addDomainWhite($url = 'index.php?s=/HyApi/addDomain', $data = [])
     {
         $headers = self::getRequestHeaders();
@@ -106,6 +123,19 @@ class HyHlDomainWhiteSdk
     }
 
 
+    /**
+     * @param string $url
+     * @param array $data
+     * @return string
+     * @node_name
+     * @link
+     * @desc
+     *
+     * $data = [
+     *      "domain" => 'xx',
+     *      "timestamp" => "时间戳"
+     * ]
+     */
     public static function delDomainWhite($url = 'index.php?s=/HyApi/delDomain', $data = [])
     {
         $headers = self::getRequestHeaders();
