@@ -18,6 +18,9 @@ class HyHlDomainWhiteSdk
     private static $config;
     private static $client;
 
+    public static $body;
+    public static $encBody;
+
     public function __construct()
     {
     }
@@ -78,9 +81,10 @@ class HyHlDomainWhiteSdk
 
     public static function apiCall($url, $method, $body, $headers = [], $timeOut = 20, $options = [])
     {
-        $url              = self::getNormalConfig()['base_api_url'] . $url;
-        $body['user']     = self::getNormalConfig()['user'];
-        $body['userpass'] = self::getNormalConfig()['userpass'];
+        $url               = self::getNormalConfig()['base_api_url'] . $url;
+        $body['user']      = self::getNormalConfig()['user'];
+        $body['userpass']  = md5(self::getNormalConfig()['userpass']);
+        $body['timestamp'] = time();
         if ($body && is_array($body)) {
             foreach ($body as $k => &$v) {
                 if ($k != 'timestamp') {
@@ -88,12 +92,17 @@ class HyHlDomainWhiteSdk
                 }
             }
         }
-        $encBody['encrypt'] = self::code(json_encode($body));
-        $body               = RawRequest::build_query($body);
-        if (strtolower($method) == 'get') {
-            $url .= $body;
+        self::$body = $body;
+        if (self::getLogger()) {
+            self::getLogger()->info("body encrypt before:" . print_r($body, 1));
         }
-        $rawResponse = self::getClient()->send($url, $method, $body, $headers, $timeOut, $options);
+        $encBody['encrypt'] = self::code(json_encode($body));
+        self::$encBody      = $encBody;
+        $encBody            = RawRequest::build_query($encBody);
+        if (strtolower($method) == 'get') {
+            $url .= $encBody;
+        }
+        $rawResponse = self::getClient()->send($url, $method, $encBody, $headers, $timeOut, $options);
         $resBody     = $rawResponse->getBody();
 
         return $resBody;
@@ -150,7 +159,10 @@ class HyHlDomainWhiteSdk
         $encrypted = '';
         if ($data != "") {
             $public_key = self::getPublicKey();
-            $pu_key     = openssl_pkey_get_public($public_key); //这个函数可用来判断公钥是否是可用的
+            if (self::getLogger()) {
+                self::getLogger()->info('public key:' . $public_key);
+            }
+            $pu_key = openssl_pkey_get_public($public_key); //这个函数可用来判断公钥是否是可用的
             if (!$pu_key) {
                 if (self::getLogger()) {
                     self::getLogger()->error("public key invalid");
@@ -166,7 +178,7 @@ class HyHlDomainWhiteSdk
             $encrypted = base64_encode($encrypted);
             if ($encrypted) {
                 if (self::getLogger()) {
-                    self::getLogger()->info($encrypted);
+                    self::getLogger()->info('encrypted:' . $encrypted);
                 }
             }
 
