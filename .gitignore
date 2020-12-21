@@ -5,3 +5,4 @@ composer.lock
 .idea/
 tests/coverage/
 .php_cs.cache
+domainWhite.conf
